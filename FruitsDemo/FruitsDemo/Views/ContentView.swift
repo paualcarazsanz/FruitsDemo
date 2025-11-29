@@ -58,6 +58,7 @@ struct ContentView: View {
                             ToolbarItem(placement: .navigationBarLeading) {
                                 Button("Cancel") {
                                     sheetIsVisible = false
+                                    sheetAction = .cancel //Con esto, al abrir el modal, si se cancela, y se vuelve a abrir despues, se queda limpio
                                 }
                             }
                             // Botón para añadir
@@ -66,7 +67,7 @@ struct ContentView: View {
                                     sheetIsVisible = false
                                     sheetAction = .add
                                 }
-                                .disabled(newFruit.name.isEmpty)
+                                .disabled(isAddButtonDisabled()) //Usa la funcion para la validacion
                             }
                         }
                 }
@@ -102,8 +103,30 @@ struct ContentView: View {
     // Función que se ejecuta cuando se cierra el modal
     func onSheetDismiss() {
         if sheetAction == .add {
-            // Agregar la nueva fruta al store
-            store.fruits.append(newFruit)
+            // Limpiar espacios en blanco del nombre
+            let trimmedName = newFruit.name.trimmingCharacters(in: .whitespaces)
+
+            // Validar que el nombre no esté vacío
+            if trimmedName.isEmpty {
+                alertMessage = "The fruit name cannot be empty."
+                showAlert = true
+                sheetAction = .cancel
+                return
+            }
+            
+            // Validar que no sea duplicado
+            if fruitAlreadyExists() {
+                alertMessage = "A fruit with the name '\(trimmedName)' already exists."
+                showAlert = true
+                sheetAction = .cancel
+                return
+            }
+            
+            //Si pasa correctamente las validaciones, se agrega la fruta
+            var fruitToAdd = newFruit
+            fruitToAdd.name = trimmedName   // Guarda el nombre sin espacios
+            store.fruits.append(fruitToAdd) // Agrega la nueva fruta al store
+
             
             // Reset: crear una nueva fruta vacía
             newFruit = Fruit(name: "", emoji: .apple, description: "")
