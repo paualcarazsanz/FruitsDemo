@@ -14,6 +14,10 @@ struct ContentView: View {
     @State private var sheetAction = SheetAction.cancel
     @State private var newFruit = Fruit(name: "", emoji: .apple, description: "")
     
+    // Estado para mostrar alertas
+    @State private var showAlert = false
+    @State private var alertMessage = ""
+    
     var body: some View {
         // Vista principal de la lista de frutas
         NavigationView {
@@ -29,30 +33,34 @@ struct ContentView: View {
                 ToolbarItem(placement: .navigationBarLeading) {
                     EditButton()
                 }
+                
                 // Botón para agregar una nueva fruta
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
+                        // Resetear la nueva fruta antes de abrir el modal
+                        newFruit = Fruit(name: "", emoji: .apple, description: "")
                         sheetIsVisible = true
                     }) {
                         Image(systemName: "plus")
                     }
                 }
             }
+            
             // Modal para agregar una nueva fruta
             .sheet(isPresented: $sheetIsVisible, onDismiss: onSheetDismiss) {
                 NavigationView {
                     AddFruitView(newFruit: $newFruit)
-                        //Añadimos la fruta (titulo)
+                        // Añadimos la fruta (título)
                         .navigationTitle("Add Fruit")
                         .navigationBarTitleDisplayMode(.inline)
                         .toolbar {
-                            //Cancelamos
+                            // Botón para cancelar
                             ToolbarItem(placement: .navigationBarLeading) {
                                 Button("Cancel") {
                                     sheetIsVisible = false
                                 }
                             }
-                            //Añadimos
+                            // Botón para añadir
                             ToolbarItem(placement: .navigationBarTrailing) {
                                 Button("Add") {
                                     sheetIsVisible = false
@@ -63,9 +71,31 @@ struct ContentView: View {
                         }
                 }
             }
+            // Alerta para mostrar errores
+            .alert(isPresented: $showAlert) {
+                Alert(
+                    title: Text("Error"),
+                    message: Text(alertMessage),
+                    dismissButton: .default(Text("OK"))
+                )
+            }
             
             // Vista por defecto (split view)
             DetailFruitView(fruit: store.fruits.first ?? FruitStore.defaultFruit)
+        }
+    }
+    
+    // Función para verificar que hay un nombre al añadir una fruta
+    func isAddButtonDisabled() -> Bool {
+        // El botón está deshabilitado si el nombre está vacío o solo tiene espacios
+        return newFruit.name.trimmingCharacters(in: .whitespaces).isEmpty
+    }
+        
+    // Función para verificar si la fruta ya existe (duplicado)
+    func fruitAlreadyExists() -> Bool {
+        let trimmedName = newFruit.name.trimmingCharacters(in: .whitespaces)
+        return store.fruits.contains { fruit in
+            fruit.name.lowercased() == trimmedName.lowercased()
         }
     }
     
