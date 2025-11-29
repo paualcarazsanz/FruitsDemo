@@ -38,18 +38,21 @@ struct ContentView: View {
                     }
                 }
             }
-            // Sheet para agregar una nueva fruta 
+            // Modal para agregar una nueva fruta
             .sheet(isPresented: $sheetIsVisible, onDismiss: onSheetDismiss) {
                 NavigationView {
                     AddFruitView(newFruit: $newFruit)
+                        //Añadimos la fruta (titulo)
                         .navigationTitle("Add Fruit")
                         .navigationBarTitleDisplayMode(.inline)
                         .toolbar {
+                            //Cancelamos
                             ToolbarItem(placement: .navigationBarLeading) {
                                 Button("Cancel") {
                                     sheetIsVisible = false
                                 }
                             }
+                            //Añadimos
                             ToolbarItem(placement: .navigationBarTrailing) {
                                 Button("Add") {
                                     sheetIsVisible = false
