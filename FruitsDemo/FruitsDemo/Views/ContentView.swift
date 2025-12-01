@@ -21,18 +21,23 @@ struct ContentView: View {
     var body: some View {
         // Vista principal de la lista de frutas
         NavigationView {
-            List(store.fruits) { fruit in
-                NavigationLink(destination: DetailFruitView(fruit: fruit)) {
-                    FruitRowView(fruit: fruit)
+            List {
+                // Cambio realizado por Pau Alcaraz: ForEach necesario para .onDelete
+                ForEach(store.fruits) { fruit in
+                    NavigationLink(destination: DetailFruitView(fruit: fruit)) {
+                        FruitRowView(fruit: fruit)
+                    }
                 }
+                .onDelete(perform: deleteFruit) // Permite eliminar frutas deslizando
             }
             .navigationTitle("Fruits")
             // Toolbar para la navegación principal
             .toolbar {
-                // Botón para editar la lista de frutas
+                //Ocultamos boton de edit porque no se requiere
+                /* Botón para editar la lista de frutas
                 ToolbarItem(placement: .navigationBarLeading) {
                     EditButton()
-                }
+                }*/
                 
                 // Botón para agregar una nueva fruta
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -92,12 +97,17 @@ struct ContentView: View {
         return newFruit.name.trimmingCharacters(in: .whitespaces).isEmpty
     }
         
-    // Función para verificar si la fruta ya existe (duplicado)
+    // Función para verificar si la fruta ya existe, es decir, evitar frutas duplicadas
     func fruitAlreadyExists() -> Bool {
         let trimmedName = newFruit.name.trimmingCharacters(in: .whitespaces)
         return store.fruits.contains { fruit in
             fruit.name.lowercased() == trimmedName.lowercased()
         }
+    }
+    
+    // Cambio realizado por Pau Alcaraz: Función para eliminar frutas de la lista
+    func deleteFruit(at offsets: IndexSet) {
+        store.fruits.remove(atOffsets: offsets)
     }
     
     // Función que se ejecuta cuando se cierra el modal
